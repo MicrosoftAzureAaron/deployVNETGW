@@ -20,3 +20,4 @@ Azure_PE_to_SQL_Sandbox/iteration.txt
 Azure_PE_to_SQL_Sandbox/main.parameters.bicepparam
 VNETGateway/iteration.txt
 VNETGateway/main.parameters.bicepparam
+Create-NewProject.ps1
