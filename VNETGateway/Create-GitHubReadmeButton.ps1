@@ -10,7 +10,7 @@ $rawURL = "https://raw.githubusercontent${shortURL}"
 $encodedURL = [uri]::EscapeDataString($rawURL)
 
 # Specify the path to the readme.md file
-$readmePath = "readme.md"
+$readmePath = ".\readme.md"
 
 # Content to append to the readme.md file
 $newContent = "[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/${encodedURL})"
