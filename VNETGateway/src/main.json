@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.24.24.22086",
-      "templateHash": "9314822390519563913"
+      "templateHash": "5525779241269055912"
     }
   },
   "parameters": {
@@ -19,7 +19,17 @@
     "VPNPSK": {
       "type": "string",
       "metadata": {
-        "description": ""
+        "description": "Site to Site Connection Pre Shared Key"
+      }
+    },
+    "GWSub": {
+      "type": "object",
+      "defaultValue": {
+        "name": "GatewaySubnet",
+        "addressPrefix": "10.0.0.0/24"
+      },
+      "metadata": {
+        "description": "Gateway subnet for VNET"
       }
     }
   },
@@ -34,14 +44,21 @@
         },
         "mode": "Incremental",
         "parameters": {
-          "virtualNetwork_AddressPrefix": {
-            "value": "10.0.0.0/16"
+          "addressPrefixes": {
+            "value": [
+              "10.0.0.0/16"
+            ]
           },
           "location": {
             "value": "[parameters('location')]"
           },
-          "virtualNetwork_Name": {
-            "value": "VNETGatewayVNET"
+          "name": {
+            "value": "VPN_Gateway_VNET"
+          },
+          "subnets": {
+            "value": [
+              "[parameters('GWSub')]"
+            ]
           }
         },
         "template": {
@@ -51,411 +68,325 @@
             "_generator": {
               "name": "bicep",
               "version": "0.24.24.22086",
-              "templateHash": "494755703264219797"
-            }
+              "templateHash": "6109618834015481409"
+            },
+            "name": "Virtual Networks",
+            "description": "This module deploys Microsoft.Network Virtual Networks and optionally available children or extensions",
+            "owner": "CARML"
           },
           "parameters": {
-            "location": {
+            "name": {
               "type": "string",
               "metadata": {
-                "description": "Azure Datacenter that the resource is deployed to"
+                "description": "Required. The Virtual Network (vNet) Name."
               }
             },
-            "virtualNetwork_Name": {
+            "location": {
               "type": "string",
+              "defaultValue": "[resourceGroup().location]",
               "metadata": {
-                "description": "Name of the Virtual Network"
+                "description": "Optional. Location for all resources."
+              }
+            },
+            "addressPrefixes": {
+              "type": "array",
+              "metadata": {
+                "description": "Required. An Array of 1 or more IP Address Prefixes for the Virtual Network."
+              }
+            },
+            "subnets": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Optional. An Array of subnets to deploy to the Virtual Network."
               }
             },
             "dnsServers": {
               "type": "array",
               "defaultValue": [],
               "metadata": {
-                "description": "An Array of Custom DNS Server IP Addresses.  Azure Wireserver will be used if left as an empty array [].\r\nExample:\r\n[10.0.0.4, 10.0.0.5]\r\n"
+                "description": "Optional. DNS Servers associated to the Virtual Network."
               }
             },
-            "networkSecurityGroup_Default_Name": {
+            "ddosProtectionPlanId": {
               "type": "string",
-              "defaultValue": "[format('{0}_NSG_General', parameters('virtualNetwork_Name'))]",
+              "defaultValue": "",
               "metadata": {
-                "description": "Name of the General Network Security Group"
+                "description": "Optional. Resource ID of the DDoS protection plan to assign the VNET to. If it's left blank, DDoS protection will not be configured. If it's provided, the VNET created by this template will be attached to the referenced DDoS protection plan. The DDoS protection plan can exist in the same or in a different subscription."
               }
             },
-            "routeTable_Name": {
+            "virtualNetworkPeerings": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Optional. Virtual Network Peerings configurations"
+              }
+            },
+            "diagnosticLogsRetentionInDays": {
+              "type": "int",
+              "defaultValue": 365,
+              "minValue": 0,
+              "maxValue": 365,
+              "metadata": {
+                "description": "Optional. Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely."
+              }
+            },
+            "diagnosticStorageAccountId": {
               "type": "string",
-              "defaultValue": "[format('{0}_RT_General', parameters('virtualNetwork_Name'))]",
+              "defaultValue": "",
               "metadata": {
-                "description": "Name of the General Route Table"
+                "description": "Optional. Resource ID of the diagnostic storage account."
               }
             },
-            "virtualNetwork_AddressPrefix": {
-              "type": "string"
+            "diagnosticWorkspaceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Resource ID of the diagnostic log analytics workspace."
+              }
+            },
+            "diagnosticEventHubAuthorizationRuleId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Resource ID of the diagnostic event hub authorization rule for the Event Hubs namespace in which the event hub should be created or streamed to."
+              }
+            },
+            "diagnosticEventHubName": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional. Name of the diagnostic event hub within the namespace to which logs are streamed. Without this, an event hub is created for each log category."
+              }
+            },
+            "lock": {
+              "type": "string",
+              "defaultValue": "NotSpecified",
+              "allowedValues": [
+                "CanNotDelete",
+                "NotSpecified",
+                "ReadOnly"
+              ],
+              "metadata": {
+                "description": "Optional. Specify the type of lock."
+              }
+            },
+            "roleAssignments": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Optional. Array of role assignment objects that contain the 'roleDefinitionIdOrName' and 'principalId' to define RBAC role assignments on this resource. In the roleDefinitionIdOrName attribute, you can provide either the display name of the role definition, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. Tags of the resource."
+              }
+            },
+            "logsToEnable": {
+              "type": "array",
+              "defaultValue": [
+                "VMProtectionAlerts"
+              ],
+              "allowedValues": [
+                "VMProtectionAlerts"
+              ],
+              "metadata": {
+                "description": "Optional. The name of logs that will be streamed."
+              }
+            },
+            "metricsToEnable": {
+              "type": "array",
+              "defaultValue": [
+                "AllMetrics"
+              ],
+              "allowedValues": [
+                "AllMetrics"
+              ],
+              "metadata": {
+                "description": "Optional. The name of metrics that will be streamed."
+              }
+            },
+            "newOrExistingNSG": {
+              "type": "string",
+              "defaultValue": "none",
+              "allowedValues": [
+                "new",
+                "existing",
+                "none"
+              ],
+              "metadata": {
+                "description": "Create a new, use an existing, or provide no default NSG."
+              }
+            },
+            "networkSecurityGroupName": {
+              "type": "string",
+              "defaultValue": "[uniqueString(resourceGroup().name, parameters('location'))]",
+              "metadata": {
+                "description": "Name of default NSG to use for subnets."
+              }
             }
           },
           "variables": {
             "copy": [
               {
-                "name": "subnet_AddressRangeCIDRs",
-                "count": "[length(range(0, 255))]",
-                "input": "[cidrSubnet(parameters('virtualNetwork_AddressPrefix'), 24, range(0, 255)[copyIndex('subnet_AddressRangeCIDRs')])]"
+                "name": "diagnosticsLogs",
+                "count": "[length(parameters('logsToEnable'))]",
+                "input": {
+                  "category": "[parameters('logsToEnable')[copyIndex('diagnosticsLogs')]]",
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('diagnosticLogsRetentionInDays')]"
+                  }
+                }
+              },
+              {
+                "name": "diagnosticsMetrics",
+                "count": "[length(parameters('metricsToEnable'))]",
+                "input": {
+                  "category": "[parameters('metricsToEnable')[copyIndex('diagnosticsMetrics')]]",
+                  "timeGrain": null,
+                  "enabled": true,
+                  "retentionPolicy": {
+                    "enabled": true,
+                    "days": "[parameters('diagnosticLogsRetentionInDays')]"
+                  }
+                }
               }
             ],
-            "subnet_Names": [
-              "General",
-              "PrivateEndpoints",
-              "PrivateLinkService",
-              "ApplicationGatewaySubnet",
-              "AppServiceSubnet",
-              "GatewaySubnet",
-              "AzureFirewallSubnet",
-              "AzureFirewallManagementSubnet",
-              "AzureBastionSubnet",
-              "PrivateResolver_Inbound",
-              "PrivateResolver_Outbound"
-            ]
+            "ddosProtectionPlan": {
+              "id": "[parameters('ddosProtectionPlanId')]"
+            },
+            "networkSecurityGroupId": {
+              "id": "[if(equals(parameters('newOrExistingNSG'), 'new'), resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName')), resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName')))]"
+            }
           },
           "resources": [
             {
+              "condition": "[equals(parameters('newOrExistingNSG'), 'new')]",
+              "type": "Microsoft.Network/networkSecurityGroups",
+              "apiVersion": "2021-08-01",
+              "name": "[parameters('networkSecurityGroupName')]",
+              "location": "[parameters('location')]"
+            },
+            {
               "type": "Microsoft.Network/virtualNetworks",
-              "apiVersion": "2022-09-01",
-              "name": "[parameters('virtualNetwork_Name')]",
+              "apiVersion": "2021-05-01",
+              "name": "[parameters('name')]",
               "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
               "properties": {
-                "dhcpOptions": {
-                  "dnsServers": "[parameters('dnsServers')]"
-                },
-                "addressSpace": {
-                  "addressPrefixes": [
-                    "[parameters('virtualNetwork_AddressPrefix')]"
-                  ]
-                },
-                "subnets": [
+                "copy": [
                   {
-                    "name": "[variables('subnet_Names')[0]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[0]]",
-                      "networkSecurityGroup": {
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup_Default_Name'))]"
-                      },
-                      "routeTable": {
-                        "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
-                      },
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[1]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[1]]",
-                      "networkSecurityGroup": {
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup_Default_Name'))]"
-                      },
-                      "routeTable": {
-                        "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
-                      },
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[2]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[2]]",
-                      "networkSecurityGroup": {
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup_Default_Name'))]"
-                      },
-                      "routeTable": {
-                        "id": "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
-                      },
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Disabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[3]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[3]]",
-                      "networkSecurityGroup": {
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')))]"
-                      },
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[4]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[4]]",
-                      "networkSecurityGroup": {
-                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup_Default_Name'))]"
-                      },
-                      "delegations": [
-                        {
-                          "name": "delegation",
-                          "properties": {
-                            "serviceName": "Microsoft.Web/serverfarms"
-                          },
-                          "type": "Microsoft.Network/virtualNetworks/subnets/delegations"
-                        }
-                      ],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[5]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[5]]",
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[6]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[6]]",
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[7]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[7]]",
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[8]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[8]]",
-                      "delegations": [],
-                      "privateEndpointNetworkPolicies": "Disabled",
-                      "privateLinkServiceNetworkPolicies": "Enabled"
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[9]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[9]]",
-                      "delegations": [
-                        {
-                          "name": "Microsoft.Network.dnsResolvers",
-                          "properties": {
-                            "serviceName": "Microsoft.Network/dnsResolvers"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "name": "[variables('subnet_Names')[10]]",
-                    "properties": {
-                      "addressPrefix": "[variables('subnet_AddressRangeCIDRs')[10]]",
-                      "delegations": [
-                        {
-                          "name": "Microsoft.Network.dnsResolvers",
-                          "properties": {
-                            "serviceName": "Microsoft.Network/dnsResolvers"
-                          }
-                        }
-                      ]
+                    "name": "subnets",
+                    "count": "[length(parameters('subnets'))]",
+                    "input": {
+                      "name": "[parameters('subnets')[copyIndex('subnets')].name]",
+                      "properties": {
+                        "addressPrefix": "[parameters('subnets')[copyIndex('subnets')].addressPrefix]",
+                        "addressPrefixes": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'addressPrefixes'), parameters('subnets')[copyIndex('subnets')].addressPrefixes, createArray())]",
+                        "applicationGatewayIpConfigurations": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'applicationGatewayIpConfigurations'), parameters('subnets')[copyIndex('subnets')].applicationGatewayIpConfigurations, createArray())]",
+                        "delegations": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'delegations'), parameters('subnets')[copyIndex('subnets')].delegations, createArray())]",
+                        "ipAllocations": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'ipAllocations'), parameters('subnets')[copyIndex('subnets')].ipAllocations, createArray())]",
+                        "natGateway": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'natGatewayId'), createObject('id', parameters('subnets')[copyIndex('subnets')].natGatewayId), null())]",
+                        "networkSecurityGroup": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'networkSecurityGroupId'), createObject('id', parameters('subnets')[copyIndex('subnets')].networkSecurityGroupId), if(not(equals(parameters('newOrExistingNSG'), 'none')), variables('networkSecurityGroupId'), null()))]",
+                        "privateEndpointNetworkPolicies": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'privateEndpointNetworkPolicies'), parameters('subnets')[copyIndex('subnets')].privateEndpointNetworkPolicies, null())]",
+                        "privateLinkServiceNetworkPolicies": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'privateLinkServiceNetworkPolicies'), parameters('subnets')[copyIndex('subnets')].privateLinkServiceNetworkPolicies, null())]",
+                        "routeTable": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'routeTableId'), createObject('id', parameters('subnets')[copyIndex('subnets')].routeTableId), null())]",
+                        "serviceEndpoints": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'serviceEndpoints'), parameters('subnets')[copyIndex('subnets')].serviceEndpoints, createArray())]",
+                        "serviceEndpointPolicies": "[if(contains(parameters('subnets')[copyIndex('subnets')], 'serviceEndpointPolicies'), parameters('subnets')[copyIndex('subnets')].serviceEndpointPolicies, createArray())]"
+                      }
                     }
                   }
                 ],
-                "enableDdosProtection": false
+                "addressSpace": {
+                  "addressPrefixes": "[parameters('addressPrefixes')]"
+                },
+                "ddosProtectionPlan": "[if(not(empty(parameters('ddosProtectionPlanId'))), variables('ddosProtectionPlan'), null())]",
+                "dhcpOptions": "[if(not(empty(parameters('dnsServers'))), createObject('dnsServers', array(parameters('dnsServers'))), null())]",
+                "enableDdosProtection": "[not(empty(parameters('ddosProtectionPlanId')))]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup_Default_Name'))]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')))]",
-                "[resourceId('Microsoft.Network/routeTables', parameters('routeTable_Name'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
               ]
             },
             {
-              "type": "Microsoft.Network/routeTables",
-              "apiVersion": "2023-02-01",
-              "name": "[parameters('routeTable_Name')]",
-              "location": "[parameters('location')]",
+              "condition": "[not(equals(parameters('lock'), 'NotSpecified'))]",
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2017-04-01",
+              "scope": "[format('Microsoft.Network/virtualNetworks/{0}', parameters('name'))]",
+              "name": "[format('{0}-{1}-lock', parameters('name'), parameters('lock'))]",
               "properties": {
-                "disableBgpRoutePropagation": false
-              }
-            },
-            {
-              "type": "Microsoft.Network/networkSecurityGroups",
-              "apiVersion": "2022-09-01",
-              "name": "[parameters('networkSecurityGroup_Default_Name')]",
-              "location": "[parameters('location')]",
-              "properties": {}
-            },
-            {
-              "type": "Microsoft.Network/networkSecurityGroups",
-              "apiVersion": "2022-11-01",
-              "name": "[format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name'))]",
-              "location": "[parameters('location')]",
-              "properties": {
-                "securityRules": []
-              }
-            },
-            {
-              "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-              "apiVersion": "2022-11-01",
-              "name": "[format('{0}/{1}', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')), 'AllowGatewayManager')]",
-              "properties": {
-                "description": "Allow GatewayManager",
-                "protocol": "*",
-                "sourcePortRange": "*",
-                "destinationPortRange": "65200-65535",
-                "sourceAddressPrefix": "GatewayManager",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 1000,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
+                "level": "[parameters('lock')]",
+                "notes": "[if(equals(parameters('lock'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot modify the resource or child resources.')]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('name'))]"
               ]
             },
             {
-              "type": "Microsoft.Network/networkSecurityGroups/securityRules",
-              "apiVersion": "2022-11-01",
-              "name": "[format('{0}/{1}', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')), 'AllowHTTPS')]",
+              "condition": "[or(or(or(not(empty(parameters('diagnosticStorageAccountId'))), not(empty(parameters('diagnosticWorkspaceId')))), not(empty(parameters('diagnosticEventHubAuthorizationRuleId')))), not(empty(parameters('diagnosticEventHubName'))))]",
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Network/virtualNetworks/{0}', parameters('name'))]",
+              "name": "[format('{0}-diagnosticSettings', parameters('name'))]",
               "properties": {
-                "description": "Allow HTTPS",
-                "protocol": "Tcp",
-                "sourcePortRange": "*",
-                "destinationPortRange": "443",
-                "sourceAddressPrefix": "*",
-                "destinationAddressPrefix": "*",
-                "access": "Allow",
-                "priority": 1001,
-                "direction": "Inbound",
-                "sourcePortRanges": [],
-                "destinationPortRanges": [],
-                "sourceAddressPrefixes": [],
-                "destinationAddressPrefixes": []
+                "storageAccountId": "[if(not(empty(parameters('diagnosticStorageAccountId'))), parameters('diagnosticStorageAccountId'), null())]",
+                "workspaceId": "[if(not(empty(parameters('diagnosticWorkspaceId'))), parameters('diagnosticWorkspaceId'), null())]",
+                "eventHubAuthorizationRuleId": "[if(not(empty(parameters('diagnosticEventHubAuthorizationRuleId'))), parameters('diagnosticEventHubAuthorizationRuleId'), null())]",
+                "eventHubName": "[if(not(empty(parameters('diagnosticEventHubName'))), parameters('diagnosticEventHubName'), null())]",
+                "metrics": "[variables('diagnosticsMetrics')]",
+                "logs": "[variables('diagnosticsLogs')]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}_NSG_ApplicationGateway', parameters('virtualNetwork_Name')))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('name'))]"
               ]
             }
           ],
           "outputs": {
-            "general_SubnetID": {
+            "resourceGroupName": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[0].id]"
+              "metadata": {
+                "description": "The resource group the virtual network was deployed into"
+              },
+              "value": "[resourceGroup().name]"
             },
-            "privateEndpoint_SubnetID": {
+            "resourceId": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[1].id]"
+              "metadata": {
+                "description": "The resource ID of the virtual network"
+              },
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('name'))]"
             },
-            "privateLinkService_SubnetID": {
+            "name": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[2].id]"
+              "metadata": {
+                "description": "The name of the virtual network"
+              },
+              "value": "[parameters('name')]"
             },
-            "applicationGateway_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[3].id]"
+            "subnetNames": {
+              "type": "array",
+              "metadata": {
+                "description": "The names of the deployed subnets"
+              },
+              "copy": {
+                "count": "[length(parameters('subnets'))]",
+                "input": "[parameters('subnets')[copyIndex()].name]"
+              }
             },
-            "appService_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[4].id]"
-            },
-            "gateway_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[5].id]"
-            },
-            "azureFirewall_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[6].id]"
-            },
-            "azureFirewallManagement_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[7].id]"
-            },
-            "bastion_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[8].id]"
-            },
-            "privateResolver_Inbound_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[9].id]"
-            },
-            "privateResolver_Outbound_SubnetID": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[10].id]"
-            },
-            "general_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[0].properties.addressPrefix]"
-            },
-            "privateEndpoint_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[1].properties.addressPrefix]"
-            },
-            "privateLinkService_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[2].properties.addressPrefix]"
-            },
-            "applicationGateway_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[3].properties.addressPrefix]"
-            },
-            "appService_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[4].properties.addressPrefix]"
-            },
-            "gateway_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[5].properties.addressPrefix]"
-            },
-            "azureFirewall_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[6].properties.addressPrefix]"
-            },
-            "azureFirewallManagement_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[7].properties.addressPrefix]"
-            },
-            "bastion_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[8].properties.addressPrefix]"
-            },
-            "privateResolver_Inbound_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[9].properties.addressPrefix]"
-            },
-            "privateResolver_Outbound_Subnet_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').subnets[10].properties.addressPrefix]"
-            },
-            "virtualNetwork_Name": {
-              "type": "string",
-              "value": "[parameters('virtualNetwork_Name')]"
-            },
-            "virtualNetwork_ID": {
-              "type": "string",
-              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name'))]"
-            },
-            "virtualNetwork_AddressPrefix": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_Name')), '2022-09-01').addressSpace.addressPrefixes[0]]"
-            },
-            "routeTable_Name": {
-              "type": "string",
-              "value": "[parameters('routeTable_Name')]"
+            "subnetResourceIds": {
+              "type": "array",
+              "metadata": {
+                "description": "The resource IDs of the deployed subnets"
+              },
+              "copy": {
+                "count": "[length(parameters('subnets'))]",
+                "input": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('name'), parameters('subnets')[copyIndex()].name)]"
+              }
             }
           }
         }
@@ -481,7 +412,7 @@
             "value": "VNETGW"
           },
           "virtualNetworkGateway_Subnet_ResourceID": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployVNET'), '2022-09-01').outputs.gateway_SubnetID.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployVNET'), '2022-09-01').outputs.subnetResourceIds.value[0]]"
           },
           "virtualNetworkGateway_SKU": {
             "value": "VpnGw2AZ"
@@ -494,7 +425,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.24.24.22086",
-              "templateHash": "3912626297439443545"
+              "templateHash": "3238128361424875822"
             }
           },
           "parameters": {
@@ -589,7 +520,7 @@
                   "asn": "[parameters('virtualNetworkGateway_ASN')]",
                   "peerWeight": 0
                 },
-                "vpnGatewayGeneration": "Generation1",
+                "vpnGatewayGeneration": "Generation2",
                 "allowRemoteVnetTraffic": false,
                 "allowVirtualWanTraffic": false
               },
@@ -640,7 +571,7 @@
             "value": "[parameters('location')]"
           },
           "virtualNetworkGateway_ID": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployVNET'), '2022-09-01').outputs.virtualNetwork_ID.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployVPNGW'), '2022-09-01').outputs.virtualNetworkGateway_ResourceID.value]"
           },
           "vpn_Destination_ASN": {
             "value": 64512
@@ -665,7 +596,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.24.24.22086",
-              "templateHash": "14025246993927045922"
+              "templateHash": "6772494361515479955"
             }
           },
           "parameters": {
@@ -738,8 +669,20 @@
                 "enableBgp": true,
                 "useLocalAzureIpAddress": false,
                 "usePolicyBasedTrafficSelectors": false,
+                "ipsecPolicies": [
+                  {
+                    "saLifeTimeSeconds": 3600,
+                    "saDataSizeKilobytes": 102400000,
+                    "ipsecEncryption": "AES256",
+                    "ipsecIntegrity": "SHA256",
+                    "ikeEncryption": "AES256",
+                    "ikeIntegrity": "SHA256",
+                    "dhGroup": "DHGroup14",
+                    "pfsGroup": "None"
+                  }
+                ],
                 "dpdTimeoutSeconds": 45,
-                "connectionMode": "Default"
+                "connectionMode": "ResponderOnly"
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Network/localNetworkGateways', format('{0}_LocalNetworkGateway', parameters('vpn_Destination_Name')))]"
@@ -751,7 +694,7 @@
               "name": "[format('{0}_LocalNetworkGateway', parameters('vpn_Destination_Name'))]",
               "location": "[parameters('location')]",
               "properties": {
-                "gatewayIpAddress": "[parameters('vpn_Destination_PublicIPAddress')]",
+                "fqdn": "[parameters('vpn_Destination_PublicIPAddress')]",
                 "bgpSettings": {
                   "asn": "[parameters('vpn_Destination_ASN')]",
                   "bgpPeeringAddress": "[parameters('vpn_Destination_BGPIPAddress')]"
@@ -762,7 +705,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'deployVNET')]"
+        "[resourceId('Microsoft.Resources/deployments', 'deployVPNGW')]"
       ]
     }
   ]

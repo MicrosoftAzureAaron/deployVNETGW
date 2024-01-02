@@ -1,15 +1,22 @@
 @description('Azure Datacenter location for the resources')
 param location string = 'southcentralus'
 
-@description('')
+@description('Site to Site Connection Pre Shared Key')
 param VPNPSK string
+
+@description('Gateway subnet for VNET')
+param GWSub object = {
+  name: 'GatewaySubnet'
+  addressPrefix: '10.0.0.0/24'
+}
 
 module VPNVNET '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: 'deployVNET'
   params: {
-    virtualNetwork_AddressPrefix: '10.0.0.0/16'
+    addressPrefixes: [ '10.0.0.0/16' ]
     location: location
-    virtualNetwork_Name: 'VNETGatewayVNET'
+    name: 'VPN_Gateway_VNET'
+    subnets: [ GWSub ]
   }
 }
 
@@ -19,7 +26,7 @@ module VPNGW '../../modules/Microsoft.Network/VirtualNetworkGateway.bicep' = {
     location: location
     virtualNetworkGateway_ASN: 65512
     virtualNetworkGateway_Name: 'VNETGW'
-    virtualNetworkGateway_Subnet_ResourceID: VPNVNET.outputs.gateway_SubnetID
+    virtualNetworkGateway_Subnet_ResourceID: VPNVNET.outputs.subnetResourceIds[0]
     virtualNetworkGateway_SKU: 'VpnGw2AZ'
   }
 }
@@ -28,7 +35,7 @@ module Azure2Home '../../modules/Microsoft.Network/Connection_and_LocalNetworkGa
   name: 'deployLNGandConnection'
   params: {
     location: location
-    virtualNetworkGateway_ID: VPNVNET.outputs.virtualNetwork_ID
+    virtualNetworkGateway_ID: VPNGW.outputs.virtualNetworkGateway_ResourceID
     vpn_Destination_ASN: 64512
     vpn_Destination_BGPIPAddress: '192.168.1.1'
     vpn_Destination_Name: 'HomeRouter'

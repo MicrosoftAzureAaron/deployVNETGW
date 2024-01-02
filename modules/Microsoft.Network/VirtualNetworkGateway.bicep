@@ -64,7 +64,7 @@ resource virtualNetworkGateway 'Microsoft.Network/virtualNetworkGateways@2023-02
       asn: virtualNetworkGateway_ASN
       peerWeight: 0
     }
-    vpnGatewayGeneration: 'Generation1'
+    vpnGatewayGeneration: 'Generation2'
     allowRemoteVnetTraffic: false
     allowVirtualWanTraffic: false
   }
