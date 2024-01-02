@@ -4,6 +4,15 @@ param location string = 'southcentralus'
 @description('Site to Site Connection Pre Shared Key')
 param VPNPSK string
 
+@description('Site to Site Connection Remote FQDN')
+param FQDN string
+
+@description('Site to Site Connection Remote BGP IP')
+param remoteBGPIP string
+
+@description('Site to Site Connection Remote Name')
+param remoteName string
+
 @description('Gateway subnet for VNET')
 param GWSub object = {
   name: 'GatewaySubnet'
@@ -37,9 +46,9 @@ module Azure2Home '../../modules/Microsoft.Network/Connection_and_LocalNetworkGa
     location: location
     virtualNetworkGateway_ID: VPNGW.outputs.virtualNetworkGateway_ResourceID
     vpn_Destination_ASN: 64512
-    vpn_Destination_BGPIPAddress: '192.168.1.1'
-    vpn_Destination_Name: 'HomeRouter'
-    vpn_Destination_PublicIPAddress: 'www.ncsdfw.com'
+    vpn_Destination_BGPIPAddress: remoteBGPIP
+    vpn_Destination_Name: remoteName
+    vpn_Destination_PublicIPAddress: FQDN
     vpn_SharedKey: VPNPSK
   }
 }
