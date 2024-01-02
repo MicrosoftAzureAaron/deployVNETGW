@@ -1,1 +1,2 @@
-hello world
+deploy button
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FMicrosoftAzureAaron%2FdeployVNETGW%2Fmain%2F%2Fsrc%2Fmain.json)
