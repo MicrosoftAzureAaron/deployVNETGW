@@ -1,6 +1,6 @@
 using './main.bicep'
-
-param VPNPSK = ''
+//not yours go to gitignore with you
+param VPNPSK = 'thisisalongpskforavpn'
 param FQDN = 'www.ncsdfw.com'
 param remoteBGPIP = '192.168.1.1'
 param remoteName = 'HomeRouter'
