@@ -1,0 +1,3 @@
+https://raw.githubusercontent.com/MicrosoftAzureAaron/deployVNETGW/main/modules/Microsoft.Network/Connection_and_LocalNetworkGateway.bicep
+https://raw.githubusercontent.com/MicrosoftAzureAaron/deployVNETGW/main/modules/Microsoft.Network/VirtualNetwork.bicep
+https://raw.githubusercontent.com/MicrosoftAzureAaron/deployVNETGW/main/modules/Microsoft.Network/VirtualNetworkGateway.bicep
