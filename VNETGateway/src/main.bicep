@@ -5,7 +5,7 @@ param location string = 'southcentralus'
 param VPNPSK string
 
 @description('Gateway ASN')
-param gwASN string
+param gwASN int
 
 @description('Site to Site Connection Remote FQDN')
 param FQDN string
@@ -17,7 +17,7 @@ param remoteBGPIP string
 param remoteName string
 
 @description('Remote Gateway ASN')
-param remoteASN string
+param remoteASN int
 
 @description('Gateway subnet for VNET')
 param GWSub object = {

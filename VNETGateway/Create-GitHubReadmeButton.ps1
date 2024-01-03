@@ -1,9 +1,4 @@
-param(
-    [string]$BranchName = "main",
-    [string]$DirectoryName
-)
-
-$originalURL = "https://github.com/MicrosoftAzureAaron/deployVNETGW/blob/${BranchName}${DirectoryName}/src/main.json"
+$originalURL = "https://raw.githubusercontent.com/MicrosoftAzureAaron/deployVNETGW/main/VNETGateway/src/main.json"
 $removeBlob = $originalURL.Remove($originalURL.IndexOf("/blob"), 5)
 $shortURL = $removeBlob.Substring(14)
 $rawURL = "https://raw.githubusercontent${shortURL}"
