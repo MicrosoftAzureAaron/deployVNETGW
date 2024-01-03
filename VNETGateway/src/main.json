@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.24.24.22086",
-      "templateHash": "5525779241269055912"
+      "templateHash": "8470341707016181199"
     }
   },
   "parameters": {
@@ -20,6 +20,36 @@
       "type": "string",
       "metadata": {
         "description": "Site to Site Connection Pre Shared Key"
+      }
+    },
+    "gwASN": {
+      "type": "int",
+      "metadata": {
+        "description": "Gateway ASN"
+      }
+    },
+    "FQDN": {
+      "type": "string",
+      "metadata": {
+        "description": "Site to Site Connection Remote FQDN"
+      }
+    },
+    "remoteBGPIP": {
+      "type": "string",
+      "metadata": {
+        "description": "Site to Site Connection Remote BGP IP"
+      }
+    },
+    "remoteName": {
+      "type": "string",
+      "metadata": {
+        "description": "Site to Site Connection Remote Name"
+      }
+    },
+    "remoteASN": {
+      "type": "int",
+      "metadata": {
+        "description": "Remote Gateway ASN"
       }
     },
     "GWSub": {
@@ -68,7 +98,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.24.24.22086",
-              "templateHash": "6109618834015481409"
+              "templateHash": "2799334104921975951"
             },
             "name": "Virtual Networks",
             "description": "This module deploys Microsoft.Network Virtual Networks and optionally available children or extensions",
@@ -113,13 +143,6 @@
               "defaultValue": "",
               "metadata": {
                 "description": "Optional. Resource ID of the DDoS protection plan to assign the VNET to. If it's left blank, DDoS protection will not be configured. If it's provided, the VNET created by this template will be attached to the referenced DDoS protection plan. The DDoS protection plan can exist in the same or in a different subscription."
-              }
-            },
-            "virtualNetworkPeerings": {
-              "type": "array",
-              "defaultValue": [],
-              "metadata": {
-                "description": "Optional. Virtual Network Peerings configurations"
               }
             },
             "diagnosticLogsRetentionInDays": {
@@ -169,13 +192,6 @@
               ],
               "metadata": {
                 "description": "Optional. Specify the type of lock."
-              }
-            },
-            "roleAssignments": {
-              "type": "array",
-              "defaultValue": [],
-              "metadata": {
-                "description": "Optional. Array of role assignment objects that contain the 'roleDefinitionIdOrName' and 'principalId' to define RBAC role assignments on this resource. In the roleDefinitionIdOrName attribute, you can provide either the display name of the role definition, or its fully qualified ID in the following format: '/providers/Microsoft.Authorization/roleDefinitions/c2f4ef07-c644-48eb-af81-4b1b4947fb11'"
               }
             },
             "tags": {
@@ -406,7 +422,7 @@
             "value": "[parameters('location')]"
           },
           "virtualNetworkGateway_ASN": {
-            "value": 65512
+            "value": "[parameters('gwASN')]"
           },
           "virtualNetworkGateway_Name": {
             "value": "VNETGW"
@@ -574,16 +590,16 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployVPNGW'), '2022-09-01').outputs.virtualNetworkGateway_ResourceID.value]"
           },
           "vpn_Destination_ASN": {
-            "value": 64512
+            "value": "[parameters('remoteASN')]"
           },
           "vpn_Destination_BGPIPAddress": {
-            "value": "192.168.1.1"
+            "value": "[parameters('remoteBGPIP')]"
           },
           "vpn_Destination_Name": {
-            "value": "HomeRouter"
+            "value": "[parameters('remoteName')]"
           },
           "vpn_Destination_PublicIPAddress": {
-            "value": "www.ncsdfw.com"
+            "value": "[parameters('FQDN')]"
           },
           "vpn_SharedKey": {
             "value": "[parameters('VPNPSK')]"
