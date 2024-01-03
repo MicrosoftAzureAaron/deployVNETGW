@@ -13,21 +13,25 @@ param virtualNetworkGateway_ASN int
 @description('Virtual Network Resource ID')
 param virtualNetworkGateway_Subnet_ResourceID string
 
-resource virtualNetworkGateway_PublicIPAddress 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
-  name: '${virtualNetworkGateway_Name}_PIP'
-  location: location
-  sku: {
-    name: 'Standard'
-    tier: 'Regional'
-  }
-  zones: [ '1', '2', '3' ]
-  properties: {
-    publicIPAddressVersion: 'IPv4'
-    publicIPAllocationMethod: 'Static'
-    idleTimeoutInMinutes: 4
-    ipTags: []
-  }
-}
+@description('The Public IP for the VPN GW')
+param virtualNetworkGateway_PublicIPAddress string
+
+// creates an AZ zone 123 pip for GW
+// resource virtualNetworkGateway_PublicIPAddress 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
+//   name: '${virtualNetworkGateway_Name}_PIP'
+//   location: location
+//   sku: {
+//     name: 'Standard'
+//     tier: 'Regional'
+//   }
+//   zones: [ '1', '2', '3' ]
+//   properties: {
+//     publicIPAddressVersion: 'IPv4'
+//     publicIPAllocationMethod: 'Static'
+//     idleTimeoutInMinutes: 4
+//     ipTags: []
+//   }
+// }
 
 resource virtualNetworkGateway 'Microsoft.Network/virtualNetworkGateways@2023-02-01' = {
   name: virtualNetworkGateway_Name
@@ -40,7 +44,8 @@ resource virtualNetworkGateway 'Microsoft.Network/virtualNetworkGateways@2023-02
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: {
-            id: virtualNetworkGateway_PublicIPAddress.id
+            // id: virtualNetworkGateway_PublicIPAddress.id
+            id: virtualNetworkGateway_PublicIPAddress
           }
           subnet: {
             id: virtualNetworkGateway_Subnet_ResourceID
@@ -72,6 +77,6 @@ resource virtualNetworkGateway 'Microsoft.Network/virtualNetworkGateways@2023-02
 
 output virtualNetworkGateway_ResourceID string = virtualNetworkGateway.id
 output virtualNetworkGateway_Name string = virtualNetworkGateway.name
-output virtualNetworkGateway_PublicIPAddress string = virtualNetworkGateway_PublicIPAddress.properties.ipAddress
+//output virtualNetworkGateway_PublicIPAddress object = virtualNetworkGateway.properties.ipConfigurations[0].properties.publicIPAddress
 output virtualNetworkGateway_BGPAddress string = virtualNetworkGateway.properties.bgpSettings.bgpPeeringAddress
 output virtualNetworkGateway_ASN int = virtualNetworkGateway.properties.bgpSettings.asn

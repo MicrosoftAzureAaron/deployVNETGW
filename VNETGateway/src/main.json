@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.24.24.22086",
-      "templateHash": "8470341707016181199"
+      "templateHash": "16935302405905431704"
     }
   },
   "parameters": {
@@ -60,6 +60,12 @@
       },
       "metadata": {
         "description": "Gateway subnet for VNET"
+      }
+    },
+    "VPNGWPIP": {
+      "type": "string",
+      "metadata": {
+        "description": "Reuse Existing Public IP, the ResourceID of the public IP to use"
       }
     }
   },
@@ -432,6 +438,9 @@
           },
           "virtualNetworkGateway_SKU": {
             "value": "VpnGw2AZ"
+          },
+          "virtualNetworkGateway_PublicIPAddress": {
+            "value": "[parameters('VPNGWPIP')]"
           }
         },
         "template": {
@@ -441,7 +450,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.24.24.22086",
-              "templateHash": "3238128361424875822"
+              "templateHash": "16908472604035047503"
             }
           },
           "parameters": {
@@ -475,30 +484,15 @@
               "metadata": {
                 "description": "Virtual Network Resource ID"
               }
+            },
+            "virtualNetworkGateway_PublicIPAddress": {
+              "type": "string",
+              "metadata": {
+                "description": "The Public IP for the VPN GW"
+              }
             }
           },
           "resources": [
-            {
-              "type": "Microsoft.Network/publicIPAddresses",
-              "apiVersion": "2022-11-01",
-              "name": "[format('{0}_PIP', parameters('virtualNetworkGateway_Name'))]",
-              "location": "[parameters('location')]",
-              "sku": {
-                "name": "Standard",
-                "tier": "Regional"
-              },
-              "zones": [
-                "1",
-                "2",
-                "3"
-              ],
-              "properties": {
-                "publicIPAddressVersion": "IPv4",
-                "publicIPAllocationMethod": "Static",
-                "idleTimeoutInMinutes": 4,
-                "ipTags": []
-              }
-            },
             {
               "type": "Microsoft.Network/virtualNetworkGateways",
               "apiVersion": "2023-02-01",
@@ -512,7 +506,7 @@
                     "properties": {
                       "privateIPAllocationMethod": "Dynamic",
                       "publicIPAddress": {
-                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('virtualNetworkGateway_Name')))]"
+                        "id": "[parameters('virtualNetworkGateway_PublicIPAddress')]"
                       },
                       "subnet": {
                         "id": "[parameters('virtualNetworkGateway_Subnet_ResourceID')]"
@@ -539,10 +533,7 @@
                 "vpnGatewayGeneration": "Generation2",
                 "allowRemoteVnetTraffic": false,
                 "allowVirtualWanTraffic": false
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('virtualNetworkGateway_Name')))]"
-              ]
+              }
             }
           ],
           "outputs": {
@@ -553,10 +544,6 @@
             "virtualNetworkGateway_Name": {
               "type": "string",
               "value": "[parameters('virtualNetworkGateway_Name')]"
-            },
-            "virtualNetworkGateway_PublicIPAddress": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', format('{0}_PIP', parameters('virtualNetworkGateway_Name'))), '2022-11-01').ipAddress]"
             },
             "virtualNetworkGateway_BGPAddress": {
               "type": "string",

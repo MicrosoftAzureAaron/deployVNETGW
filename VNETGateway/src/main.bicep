@@ -25,6 +25,9 @@ param GWSub object = {
   addressPrefix: '10.0.0.0/24'
 }
 
+@description('Reuse Existing Public IP, the ResourceID of the public IP to use')
+param VPNGWPIP string
+
 module VPNVNET '../../modules/Microsoft.Network/VirtualNetwork.bicep' = {
   name: 'deployVNET'
   params: {
@@ -43,6 +46,7 @@ module VPNGW '../../modules/Microsoft.Network/VirtualNetworkGateway.bicep' = {
     virtualNetworkGateway_Name: 'VNETGW'
     virtualNetworkGateway_Subnet_ResourceID: VPNVNET.outputs.subnetResourceIds[0]
     virtualNetworkGateway_SKU: 'VpnGw2AZ'
+    virtualNetworkGateway_PublicIPAddress: VPNGWPIP
   }
 }
 
